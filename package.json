@@ -1,0 +1,20 @@
+{
+  "name": "@davoxi/client",
+  "version": "1.0.0",
+  "description": "Unified Davoxi API client for all integration packages",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.2"
+  }
+}
