@@ -11,17 +11,29 @@ import type {
   ApiKeyCreated,
   AuthTokens,
   Business,
+  CallLog,
+  CallLogFilters,
   CreateAgentInput,
   CreateBusinessInput,
+  CreateWebhookInput,
   DavoxiClientOptions,
   Invoice,
+  PhoneNumber,
   Subscription,
   UpdateAgentInput,
   UpdateBusinessInput,
+  UpdateWebhookInput,
   UsageRecord,
   UsageSummary,
   UserProfile,
+  Webhook,
 } from "./types";
+
+import {
+  createAgentSchema,
+  updateAgentSchema,
+  validateAgentTools,
+} from "@davoxi/validation";
 
 // ------------------------------------------------------------------ //
 //  Error                                                              //
@@ -244,6 +256,10 @@ export class DavoxiClient {
     data: CreateAgentInput,
     signal?: AbortSignal,
   ): Promise<AgentDefinition> {
+    createAgentSchema.parse(data);
+    if (data.tools?.length) {
+      validateAgentTools(businessId, data.tools);
+    }
     return this.request<AgentDefinition>(
       "POST",
       `/businesses/${DavoxiClient.enc(businessId)}/agents`,
@@ -258,6 +274,10 @@ export class DavoxiClient {
     data: UpdateAgentInput,
     signal?: AbortSignal,
   ): Promise<AgentDefinition> {
+    updateAgentSchema.parse(data);
+    if (data.tools?.length) {
+      validateAgentTools(businessId, data.tools);
+    }
     return this.request<AgentDefinition>(
       "PUT",
       `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}`,
@@ -335,5 +355,135 @@ export class DavoxiClient {
       undefined,
       signal,
     );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Call Logs                                                           //
+  // ------------------------------------------------------------------ //
+
+  async listCallLogs(
+    businessId: string,
+    filters?: CallLogFilters,
+    signal?: AbortSignal,
+  ): Promise<{ calls: CallLog[]; next_cursor?: string }> {
+    const params = new URLSearchParams();
+    if (filters?.start_date) params.set("start_date", filters.start_date);
+    if (filters?.end_date) params.set("end_date", filters.end_date);
+    if (filters?.status) params.set("status", filters.status);
+    if (filters?.agent_id) params.set("agent_id", filters.agent_id);
+    if (filters?.limit) params.set("limit", String(filters.limit));
+    if (filters?.cursor) params.set("cursor", filters.cursor);
+    const qs = params.toString();
+    return this.request(
+      "GET",
+      `/businesses/${DavoxiClient.enc(businessId)}/calls${qs ? `?${qs}` : ""}`,
+      undefined,
+      signal,
+    );
+  }
+
+  async getCallLog(
+    businessId: string,
+    callId: string,
+    signal?: AbortSignal,
+  ): Promise<CallLog> {
+    return this.request<CallLog>(
+      "GET",
+      `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}`,
+      undefined,
+      signal,
+    );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Webhooks                                                            //
+  // ------------------------------------------------------------------ //
+
+  async listWebhooks(
+    businessId: string,
+    signal?: AbortSignal,
+  ): Promise<Webhook[]> {
+    return this.request<Webhook[]>(
+      "GET",
+      `/businesses/${DavoxiClient.enc(businessId)}/webhooks`,
+      undefined,
+      signal,
+    );
+  }
+
+  async createWebhook(
+    businessId: string,
+    data: CreateWebhookInput,
+    signal?: AbortSignal,
+  ): Promise<Webhook> {
+    return this.request<Webhook>(
+      "POST",
+      `/businesses/${DavoxiClient.enc(businessId)}/webhooks`,
+      data,
+      signal,
+    );
+  }
+
+  async updateWebhook(
+    businessId: string,
+    webhookId: string,
+    data: UpdateWebhookInput,
+    signal?: AbortSignal,
+  ): Promise<Webhook> {
+    return this.request<Webhook>(
+      "PUT",
+      `/businesses/${DavoxiClient.enc(businessId)}/webhooks/${DavoxiClient.enc(webhookId)}`,
+      data,
+      signal,
+    );
+  }
+
+  async deleteWebhook(
+    businessId: string,
+    webhookId: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.request<void>(
+      "DELETE",
+      `/businesses/${DavoxiClient.enc(businessId)}/webhooks/${DavoxiClient.enc(webhookId)}`,
+      undefined,
+      signal,
+    );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Phone Numbers                                                       //
+  // ------------------------------------------------------------------ //
+
+  async listPhoneNumbers(signal?: AbortSignal): Promise<PhoneNumber[]> {
+    return this.request<PhoneNumber[]>(
+      "GET",
+      "/phone-numbers",
+      undefined,
+      signal,
+    );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Agent Duplication                                                    //
+  // ------------------------------------------------------------------ //
+
+  async duplicateAgent(
+    businessId: string,
+    agentId: string,
+    overrides?: Partial<CreateAgentInput>,
+    signal?: AbortSignal,
+  ): Promise<AgentDefinition> {
+    const source = await this.getAgent(businessId, agentId, signal);
+    const newAgent: CreateAgentInput = {
+      description: overrides?.description ?? `${source.description} (copy)`,
+      system_prompt: overrides?.system_prompt ?? source.system_prompt,
+      tools: overrides?.tools ?? source.tools,
+      knowledge_sources:
+        overrides?.knowledge_sources ?? source.knowledge_sources,
+      trigger_tags: overrides?.trigger_tags ?? source.trigger_tags,
+      enabled: overrides?.enabled ?? false,
+    };
+    return this.createAgent(businessId, newAgent, signal);
   }
 }
