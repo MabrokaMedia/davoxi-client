@@ -133,6 +133,61 @@ export interface ApiKey {
 export interface ApiKeyCreated extends ApiKey {
     key: string;
 }
+export interface CallLog {
+    call_id: string;
+    business_id: string;
+    agent_id?: string;
+    phone_number: string;
+    direction: "inbound" | "outbound";
+    status: "completed" | "missed" | "failed" | "in_progress";
+    duration_seconds: number;
+    started_at: string;
+    ended_at?: string;
+    summary?: string;
+    recording_url?: string;
+    transcript_url?: string;
+}
+export interface CallLogFilters {
+    /** ISO 8601 start date (e.g. '2026-01-01'). */
+    start_date?: string;
+    /** ISO 8601 end date (e.g. '2026-01-31'). */
+    end_date?: string;
+    /** Filter by call status. */
+    status?: "completed" | "missed" | "failed" | "in_progress";
+    /** Filter by agent ID. */
+    agent_id?: string;
+    /** Max results to return (default 50, max 100). */
+    limit?: number;
+    /** Pagination cursor from previous response. */
+    cursor?: string;
+}
+export interface Webhook {
+    webhook_id: string;
+    business_id: string;
+    url: string;
+    events: string[];
+    enabled: boolean;
+    secret?: string;
+    created_at: string;
+    updated_at: string;
+}
+export interface CreateWebhookInput {
+    url: string;
+    events: string[];
+    enabled?: boolean;
+}
+export interface UpdateWebhookInput {
+    url?: string;
+    events?: string[];
+    enabled?: boolean;
+}
+export interface PhoneNumber {
+    phone_number: string;
+    business_id?: string;
+    friendly_name?: string;
+    capabilities: string[];
+    status: string;
+}
 export interface DavoxiClientOptions {
     apiUrl?: string;
     apiKey: string;

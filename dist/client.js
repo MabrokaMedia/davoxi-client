@@ -7,6 +7,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DavoxiClient = exports.DavoxiApiError = void 0;
+const validation_1 = require("@davoxi/validation");
 // ------------------------------------------------------------------ //
 //  Error                                                              //
 // ------------------------------------------------------------------ //
@@ -139,9 +140,17 @@ class DavoxiClient {
         return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}`, undefined, signal);
     }
     async createAgent(businessId, data, signal) {
+        validation_1.createAgentSchema.parse(data);
+        if (data.tools?.length) {
+            (0, validation_1.validateAgentTools)(businessId, data.tools);
+        }
         return this.request("POST", `/businesses/${DavoxiClient.enc(businessId)}/agents`, data, signal);
     }
     async updateAgent(businessId, agentId, data, signal) {
+        validation_1.updateAgentSchema.parse(data);
+        if (data.tools?.length) {
+            (0, validation_1.validateAgentTools)(businessId, data.tools);
+        }
         return this.request("PUT", `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}`, data, signal);
     }
     async deleteAgent(businessId, agentId, signal) {
@@ -176,6 +185,65 @@ class DavoxiClient {
     }
     async revokeApiKey(prefix, signal) {
         await this.request("DELETE", `/api-keys/${DavoxiClient.enc(prefix)}`, undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Call Logs                                                           //
+    // ------------------------------------------------------------------ //
+    async listCallLogs(businessId, filters, signal) {
+        const params = new URLSearchParams();
+        if (filters?.start_date)
+            params.set("start_date", filters.start_date);
+        if (filters?.end_date)
+            params.set("end_date", filters.end_date);
+        if (filters?.status)
+            params.set("status", filters.status);
+        if (filters?.agent_id)
+            params.set("agent_id", filters.agent_id);
+        if (filters?.limit)
+            params.set("limit", String(filters.limit));
+        if (filters?.cursor)
+            params.set("cursor", filters.cursor);
+        const qs = params.toString();
+        return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/calls${qs ? `?${qs}` : ""}`, undefined, signal);
+    }
+    async getCallLog(businessId, callId, signal) {
+        return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}`, undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Webhooks                                                            //
+    // ------------------------------------------------------------------ //
+    async listWebhooks(businessId, signal) {
+        return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/webhooks`, undefined, signal);
+    }
+    async createWebhook(businessId, data, signal) {
+        return this.request("POST", `/businesses/${DavoxiClient.enc(businessId)}/webhooks`, data, signal);
+    }
+    async updateWebhook(businessId, webhookId, data, signal) {
+        return this.request("PUT", `/businesses/${DavoxiClient.enc(businessId)}/webhooks/${DavoxiClient.enc(webhookId)}`, data, signal);
+    }
+    async deleteWebhook(businessId, webhookId, signal) {
+        await this.request("DELETE", `/businesses/${DavoxiClient.enc(businessId)}/webhooks/${DavoxiClient.enc(webhookId)}`, undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Phone Numbers                                                       //
+    // ------------------------------------------------------------------ //
+    async listPhoneNumbers(signal) {
+        return this.request("GET", "/phone-numbers", undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Agent Duplication                                                    //
+    // ------------------------------------------------------------------ //
+    async duplicateAgent(businessId, agentId, overrides, signal) {
+        const source = await this.getAgent(businessId, agentId, signal);
+        const newAgent = {
+            description: overrides?.description ?? `${source.description} (copy)`,
+            system_prompt: overrides?.system_prompt ?? source.system_prompt,
+            tools: overrides?.tools ?? source.tools,
+            knowledge_sources: overrides?.knowledge_sources ?? source.knowledge_sources,
+            trigger_tags: overrides?.trigger_tags ?? source.trigger_tags,
+            enabled: overrides?.enabled ?? false,
+        };
+        return this.createAgent(businessId, newAgent, signal);
     }
 }
 exports.DavoxiClient = DavoxiClient;

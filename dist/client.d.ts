@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, Business, CreateAgentInput, CreateBusinessInput, DavoxiClientOptions, Invoice, Subscription, UpdateAgentInput, UpdateBusinessInput, UsageRecord, UsageSummary, UserProfile } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, PhoneNumber, Subscription, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -39,4 +39,15 @@ export declare class DavoxiClient {
     listApiKeys(signal?: AbortSignal): Promise<ApiKey[]>;
     createApiKey(name?: string, signal?: AbortSignal): Promise<ApiKeyCreated>;
     revokeApiKey(prefix: string, signal?: AbortSignal): Promise<void>;
+    listCallLogs(businessId: string, filters?: CallLogFilters, signal?: AbortSignal): Promise<{
+        calls: CallLog[];
+        next_cursor?: string;
+    }>;
+    getCallLog(businessId: string, callId: string, signal?: AbortSignal): Promise<CallLog>;
+    listWebhooks(businessId: string, signal?: AbortSignal): Promise<Webhook[]>;
+    createWebhook(businessId: string, data: CreateWebhookInput, signal?: AbortSignal): Promise<Webhook>;
+    updateWebhook(businessId: string, webhookId: string, data: UpdateWebhookInput, signal?: AbortSignal): Promise<Webhook>;
+    deleteWebhook(businessId: string, webhookId: string, signal?: AbortSignal): Promise<void>;
+    listPhoneNumbers(signal?: AbortSignal): Promise<PhoneNumber[]>;
+    duplicateAgent(businessId: string, agentId: string, overrides?: Partial<CreateAgentInput>, signal?: AbortSignal): Promise<AgentDefinition>;
 }
