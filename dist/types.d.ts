@@ -53,6 +53,30 @@ export interface AgentStats {
     avg_caller_rating: number;
     paid_boost?: number;
 }
+export interface ReadWritePerm {
+    read: boolean;
+    write: boolean;
+}
+export interface AgentPermissions {
+    tool_access?: {
+        mode: 'allow_all' | 'allow_list' | 'deny_list';
+        tools?: string[];
+    };
+    memory?: {
+        session?: ReadWritePerm;
+        caller?: ReadWritePerm;
+        business?: ReadWritePerm;
+        kind?: ReadWritePerm;
+        global?: ReadWritePerm;
+    };
+    pii_policy?: 'allow' | 'redact' | 'forbid';
+    budget?: {
+        tokens_per_turn?: number;
+        tool_calls?: number;
+        wall_clock_ms?: number;
+    };
+    cross_org?: 'in_org_only' | 'allow';
+}
 export interface AgentDefinition {
     business_id: string;
     agent_id: string;
@@ -62,6 +86,7 @@ export interface AgentDefinition {
     knowledge_sources: string[];
     trigger_tags: string[];
     enabled: boolean;
+    permissions?: AgentPermissions;
     created_at: string;
     updated_at: string;
     stats: AgentStats;
@@ -73,6 +98,7 @@ export interface CreateAgentInput {
     knowledge_sources?: string[];
     trigger_tags?: string[];
     enabled?: boolean;
+    permissions?: AgentPermissions;
 }
 export interface UpdateAgentInput {
     description?: string;
@@ -81,6 +107,7 @@ export interface UpdateAgentInput {
     knowledge_sources?: string[];
     trigger_tags?: string[];
     enabled?: boolean;
+    permissions?: AgentPermissions | null;
 }
 export interface AuthTokens {
     access_token: string;
