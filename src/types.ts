@@ -90,7 +90,12 @@ export interface AgentPermissions {
     tool_calls?: number;
     wall_clock_ms?: number;
   };
-  cross_org?: 'in_org_only' | 'allow';
+  cross_org?: {
+    mode: 'in_org_only' | 'approved' | 'allow';
+    approved_businesses?: string[];
+  };
+  allowed_agents?: string[];
+  allowed_hosts?: string[];
 }
 
 export interface AgentDefinition {
