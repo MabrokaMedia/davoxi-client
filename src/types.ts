@@ -189,6 +189,78 @@ export interface Invoice {
   pdf_url?: string;
 }
 
+// ── Usage Detail ──
+
+export interface UsageByKind {
+  calls: number;
+  minutes: number;
+  api_requests: number;
+  llm_input_tokens: number;
+  llm_output_tokens: number;
+  tool_calls: number;
+  tts_characters: number;
+  stt_seconds: number;
+  mesh_dispatches: number;
+  voice_minutes: number;
+}
+
+export interface CostBreakdown {
+  base_plan_cents: number;
+  overage_cents: number;
+  overage_minutes: number;
+  overage_api_requests: number;
+  estimated_total_cents: number;
+}
+
+export interface UsageDetail {
+  org_id: string;
+  period: string;
+  plan_id: string;
+  by_kind: UsageByKind;
+  daily: UsageRecord[];
+  cost_breakdown: CostBreakdown;
+}
+
+// ── Accounting (Billing Events & Ledger) ──
+
+export interface BillingEventRecord {
+  org_id: string;
+  event_id: string;
+  event_type: string;
+  payload: string;
+  created_at: string;
+}
+
+export interface BillingEventsResponse {
+  events: BillingEventRecord[];
+  next_cursor: string | null;
+  count: number;
+}
+
+export interface EventTypeSummary {
+  count: number;
+  latest_at: string;
+}
+
+export interface BillingEventsSummary {
+  org_id: string;
+  period: string;
+  total_events: number;
+  by_type: Record<string, EventTypeSummary>;
+}
+
+export interface LedgerEntry {
+  type: "record" | "event";
+  timestamp: string;
+  data: Record<string, unknown>;
+}
+
+export interface LedgerResponse {
+  org_id: string;
+  entries: LedgerEntry[];
+  count: number;
+}
+
 // ── API Keys ──
 
 export interface ApiKey {
@@ -200,6 +272,19 @@ export interface ApiKey {
 
 export interface ApiKeyCreated extends ApiKey {
   key: string;
+}
+
+// ── Tool Credentials (shared, org-wide API keys consumed by tools) ──
+
+export interface ToolCredential {
+  /** Friendly name — e.g. "ticketmaster", "openweathermap". */
+  key_name: string;
+  /** Fully-qualified SSM parameter path (auto-generated from key_name). */
+  ssm_path: string;
+  /** Whether a value is currently stored for this key. */
+  is_set: boolean;
+  /** Human-readable description of what this credential is for. */
+  description: string;
 }
 
 // ── Call Logs ──

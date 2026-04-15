@@ -165,6 +165,9 @@ class DavoxiClient {
     async getUsageSummary(signal) {
         return this.request("GET", "/usage/summary", undefined, signal);
     }
+    async getUsageDetail(signal) {
+        return this.request("GET", "/usage/detail", undefined, signal);
+    }
     // ------------------------------------------------------------------ //
     //  Billing                                                             //
     // ------------------------------------------------------------------ //
@@ -173,6 +176,26 @@ class DavoxiClient {
     }
     async listInvoices(signal) {
         return this.request("GET", "/billing/invoices", undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Accounting (Billing Events & Ledger)                                //
+    // ------------------------------------------------------------------ //
+    async listBillingEvents(params, signal) {
+        const qs = new URLSearchParams();
+        if (params?.limit)
+            qs.set("limit", String(params.limit));
+        if (params?.cursor)
+            qs.set("cursor", params.cursor);
+        if (params?.type)
+            qs.set("type", params.type);
+        const query = qs.toString();
+        return this.request("GET", `/billing/events${query ? `?${query}` : ""}`, undefined, signal);
+    }
+    async getBillingEventsSummary(signal) {
+        return this.request("GET", "/billing/events/summary", undefined, signal);
+    }
+    async getLedger(signal) {
+        return this.request("GET", "/billing/ledger", undefined, signal);
     }
     // ------------------------------------------------------------------ //
     //  API Keys                                                            //
@@ -185,6 +208,26 @@ class DavoxiClient {
     }
     async revokeApiKey(prefix, signal) {
         await this.request("DELETE", `/api-keys/${DavoxiClient.enc(prefix)}`, undefined, signal);
+    }
+    // ------------------------------------------------------------------ //
+    //  Tool Credentials (org-wide, consumed by agent tools)               //
+    // ------------------------------------------------------------------ //
+    /**
+     * List all tool credentials available to this org. Each entry shows the
+     * friendly `key_name`, the auto-generated `ssm_path`, and `is_set` (whether
+     * a secret value is currently stored). Use the `ssm_path` when configuring
+     * a tool's `auth_ssm_path`, or leave `auth_ssm_path` empty for public APIs.
+     */
+    async listToolCredentials(signal) {
+        return this.request("GET", "/tools/api-keys", undefined, signal);
+    }
+    /**
+     * Create or update a tool credential. The backend stores the value in AWS
+     * SSM Parameter Store as a SecureString and returns the generated `ssm_path`.
+     * Key name must be 1-50 chars, alphanumeric plus `-_`.
+     */
+    async setToolCredential(keyName, value, signal) {
+        await this.request("POST", "/tools/api-keys", { key_name: keyName, value }, signal);
     }
     // ------------------------------------------------------------------ //
     //  Call Logs                                                           //

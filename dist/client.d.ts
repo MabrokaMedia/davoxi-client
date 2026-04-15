@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, PhoneNumber, Subscription, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -34,11 +34,32 @@ export declare class DavoxiClient {
     deleteAgent(businessId: string, agentId: string, signal?: AbortSignal): Promise<void>;
     getUsage(signal?: AbortSignal): Promise<UsageRecord[]>;
     getUsageSummary(signal?: AbortSignal): Promise<UsageSummary>;
+    getUsageDetail(signal?: AbortSignal): Promise<UsageDetail>;
     getSubscription(signal?: AbortSignal): Promise<Subscription>;
     listInvoices(signal?: AbortSignal): Promise<Invoice[]>;
+    listBillingEvents(params?: {
+        limit?: number;
+        cursor?: string;
+        type?: string;
+    }, signal?: AbortSignal): Promise<BillingEventsResponse>;
+    getBillingEventsSummary(signal?: AbortSignal): Promise<BillingEventsSummary>;
+    getLedger(signal?: AbortSignal): Promise<LedgerResponse>;
     listApiKeys(signal?: AbortSignal): Promise<ApiKey[]>;
     createApiKey(name?: string, signal?: AbortSignal): Promise<ApiKeyCreated>;
     revokeApiKey(prefix: string, signal?: AbortSignal): Promise<void>;
+    /**
+     * List all tool credentials available to this org. Each entry shows the
+     * friendly `key_name`, the auto-generated `ssm_path`, and `is_set` (whether
+     * a secret value is currently stored). Use the `ssm_path` when configuring
+     * a tool's `auth_ssm_path`, or leave `auth_ssm_path` empty for public APIs.
+     */
+    listToolCredentials(signal?: AbortSignal): Promise<ToolCredential[]>;
+    /**
+     * Create or update a tool credential. The backend stores the value in AWS
+     * SSM Parameter Store as a SecureString and returns the generated `ssm_path`.
+     * Key name must be 1-50 chars, alphanumeric plus `-_`.
+     */
+    setToolCredential(keyName: string, value: string, signal?: AbortSignal): Promise<void>;
     listCallLogs(businessId: string, filters?: CallLogFilters, signal?: AbortSignal): Promise<{
         calls: CallLog[];
         next_cursor?: string;
