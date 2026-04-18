@@ -10,6 +10,7 @@ import type {
   ApiKey,
   ApiKeyCreated,
   AuthTokens,
+  ToolRef,
   BillingEventsResponse,
   BillingEventsSummary,
   Business,
@@ -299,6 +300,55 @@ export class DavoxiClient {
     await this.request<void>(
       "DELETE",
       `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}`,
+      undefined,
+      signal,
+    );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Agent tool_refs (tools-SSOT)                                        //
+  //                                                                      //
+  //  Attach / detach a registered tool (by tool_id from the tool-       //
+  //  registry) to an agent's tool_refs list. Replaces the legacy pattern //
+  //  of embedding a full ToolDefinition copy on the agent row — the     //
+  //  runtime now resolves tool_refs against the registry at dispatch    //
+  //  time so endpoint / schema / auth config flow from one source of    //
+  //  truth.                                                              //
+  //                                                                      //
+  //  Attach is idempotent: re-attaching the same tool_id with a new     //
+  //  `requires_confirmation_override` just updates the override in-     //
+  //  place. Detach is idempotent too — no error when the ref is absent. //
+  // ------------------------------------------------------------------ //
+
+  async attachToolRef(
+    businessId: string,
+    agentId: string,
+    toolId: string,
+    options?: { requires_confirmation_override?: boolean },
+    signal?: AbortSignal,
+  ): Promise<{ agent_id: string; tool_refs: ToolRef[]; replaced: boolean }> {
+    return this.request(
+      "POST",
+      `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}/tool-refs`,
+      {
+        tool_id: toolId,
+        ...(options?.requires_confirmation_override !== undefined && {
+          requires_confirmation_override: options.requires_confirmation_override,
+        }),
+      },
+      signal,
+    );
+  }
+
+  async detachToolRef(
+    businessId: string,
+    agentId: string,
+    toolId: string,
+    signal?: AbortSignal,
+  ): Promise<{ removed: boolean }> {
+    return this.request(
+      "DELETE",
+      `/businesses/${DavoxiClient.enc(businessId)}/agents/${DavoxiClient.enc(agentId)}/tool-refs/${DavoxiClient.enc(toolId)}`,
       undefined,
       signal,
     );
