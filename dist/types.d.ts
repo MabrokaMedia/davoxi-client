@@ -46,6 +46,23 @@ export interface ToolDefinition {
     auth_ssm_path?: string;
     requires_confirmation?: boolean;
 }
+/**
+ * Reference to a tool in `davoxi-tool-registry-{stage}`. Attached to an
+ * agent's `tool_refs` list. The runtime resolves each ref against the
+ * registry at dispatch time — endpoint, schema, and auth all live on
+ * the registry row. This is the tools-SSOT pattern that replaces
+ * embedding a full `ToolDefinition` copy on each agent.
+ */
+export interface ToolRef {
+    /** `tool_id` of the row in `davoxi-tool-registry-{stage}`. */
+    tool_id: string;
+    /**
+     * Optional per-agent override of the registered tool's
+     * `requires_confirmation` flag. `null` / absent means "use the
+     * registry value".
+     */
+    requires_confirmation_override?: boolean | null;
+}
 export interface AgentStats {
     total_invocations: number;
     resolved_invocations: number;
@@ -87,6 +104,22 @@ export interface AgentDefinition {
     agent_id: string;
     description: string;
     system_prompt: string;
+    /**
+     * Registry-driven tool references (tools-SSOT). Each entry points at a
+     * `RegisteredTool` in the tool-registry by id; the runtime resolves
+     * endpoint / schema / auth from the registry at dispatch time.
+     *
+     * When `tool_refs` is non-empty the runtime prefers it over the
+     * legacy `tools` array — see `davoxi-backend/docs/tools-ssot` for the
+     * migration model. Optional for back-compat with pre-migration rows.
+     */
+    tool_refs?: ToolRef[];
+    /**
+     * Legacy embedded tool definitions. Preferred path is `tool_refs`
+     * above; `tools` stays populated during the migration window so
+     * in-flight Lambdas that haven't picked up the new resolution code
+     * can still dispatch. Cleanup lands once every row has `tool_refs`.
+     */
     tools: ToolDefinition[];
     knowledge_sources: string[];
     trigger_tags: string[];

@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -32,6 +32,16 @@ export declare class DavoxiClient {
     createAgent(businessId: string, data: CreateAgentInput, signal?: AbortSignal): Promise<AgentDefinition>;
     updateAgent(businessId: string, agentId: string, data: UpdateAgentInput, signal?: AbortSignal): Promise<AgentDefinition>;
     deleteAgent(businessId: string, agentId: string, signal?: AbortSignal): Promise<void>;
+    attachToolRef(businessId: string, agentId: string, toolId: string, options?: {
+        requires_confirmation_override?: boolean;
+    }, signal?: AbortSignal): Promise<{
+        agent_id: string;
+        tool_refs: ToolRef[];
+        replaced: boolean;
+    }>;
+    detachToolRef(businessId: string, agentId: string, toolId: string, signal?: AbortSignal): Promise<{
+        removed: boolean;
+    }>;
     getUsage(signal?: AbortSignal): Promise<UsageRecord[]>;
     getUsageSummary(signal?: AbortSignal): Promise<UsageSummary>;
     getUsageDetail(signal?: AbortSignal): Promise<UsageDetail>;
