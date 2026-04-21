@@ -22,6 +22,26 @@ export interface MasterConfig {
 
 // ── Business ──
 
+/**
+ * Per-business configuration for the broker network. Controls how this
+ * business participates in org-scoped discovery (the master orchestrator
+ * uses `discoverable` + `categories` to decide which businesses a caller
+ * intent can fan out to). Mirrors `shared::models::NetworkConfig` on the
+ * Rust backend — field names are snake_case on the wire.
+ */
+export interface NetworkConfig {
+  /** Whether this business is discoverable by other businesses / the master orchestrator. Defaults to `true` on the backend when absent. */
+  discoverable?: boolean;
+  /** Contact methods other businesses may use. Values: `"api"`, `"ai"`, `"voice"`. */
+  allowed_methods?: string[];
+  /** Categories this business serves (e.g. `["music", "streaming"]`). Empty means all categories. */
+  categories?: string[];
+  /** Max voice calls per hour via the broker. */
+  voice_rate_limit_per_hour?: number;
+  /** Max total contacts (all methods) per hour via the broker. */
+  total_rate_limit_per_hour?: number;
+}
+
 export interface Business {
   business_id: string;
   name: string;
@@ -32,6 +52,7 @@ export interface Business {
   updated_at: string;
   extension?: string;
   owner_email?: string;
+  network_config?: NetworkConfig;
 }
 
 export interface CreateBusinessInput {
@@ -39,6 +60,7 @@ export interface CreateBusinessInput {
   phone_numbers?: string[];
   voice_config?: Partial<VoiceConfig>;
   master_config?: Partial<MasterConfig>;
+  network_config?: NetworkConfig;
 }
 
 export interface UpdateBusinessInput {
@@ -46,6 +68,7 @@ export interface UpdateBusinessInput {
   phone_numbers?: string[];
   voice_config?: Partial<VoiceConfig>;
   master_config?: Partial<MasterConfig>;
+  network_config?: NetworkConfig;
 }
 
 // ── Agents ──
