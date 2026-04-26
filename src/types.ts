@@ -401,6 +401,30 @@ export interface UpdateWebhookInput {
   enabled?: boolean;
 }
 
+// ── Test Call Token (chat-mode WebSocket session) ──
+
+export interface CreateTestCallTokenInput {
+  /** Business whose agents to test. Must belong to the authenticated org. */
+  business_id: string;
+  /**
+   * Session mode. Use `"chat"` for WhatsApp-style text testing from
+   * MCP / SDK clients. `"voice"` (the default) requires a real-time
+   * audio stream and is only useful from a browser.
+   */
+  mode?: "chat" | "voice";
+  /** Restrict the test session to a specific specialist agent. */
+  agent_id?: string;
+}
+
+export interface TestCallToken {
+  /** Short-lived (60 s) JWT to send as the first WebSocket frame. */
+  token: string;
+  /** Apprunner WebSocket URL — e.g. `wss://apprunner.davoxi.com/ws/voice`. */
+  ws_url: string;
+  mode?: string;
+  agent_id?: string;
+}
+
 // ── Phone Numbers ──
 
 export interface PhoneNumber {

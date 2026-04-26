@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateTestCallTokenInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, TestCallToken, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -80,5 +80,15 @@ export declare class DavoxiClient {
     updateWebhook(businessId: string, webhookId: string, data: UpdateWebhookInput, signal?: AbortSignal): Promise<Webhook>;
     deleteWebhook(businessId: string, webhookId: string, signal?: AbortSignal): Promise<void>;
     listPhoneNumbers(signal?: AbortSignal): Promise<PhoneNumber[]>;
+    /**
+     * Mint a short-lived (60 s) JWT for a test WebSocket session against
+     * a deployed business + agent. Used by MCP / dashboard clients to
+     * exercise the same Brain → Master → Specialist chain that real
+     * WhatsApp / voice traffic uses, without sending a real Twilio
+     * message.
+     *
+     * Pair with `mode: "chat"` for text-based testing.
+     */
+    createTestCallToken(input: CreateTestCallTokenInput, signal?: AbortSignal): Promise<TestCallToken>;
     duplicateAgent(businessId: string, agentId: string, overrides?: Partial<CreateAgentInput>, signal?: AbortSignal): Promise<AgentDefinition>;
 }
