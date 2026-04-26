@@ -18,12 +18,14 @@ import type {
   CallLogFilters,
   CreateAgentInput,
   CreateBusinessInput,
+  CreateTestCallTokenInput,
   CreateWebhookInput,
   DavoxiClientOptions,
   Invoice,
   LedgerResponse,
   PhoneNumber,
   Subscription,
+  TestCallToken,
   ToolCredential,
   UpdateAgentInput,
   UpdateBusinessInput,
@@ -597,6 +599,31 @@ export class DavoxiClient {
       "GET",
       "/phone-numbers",
       undefined,
+      signal,
+    );
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Test Call Token (chat-mode WebSocket sessions)                     //
+  // ------------------------------------------------------------------ //
+
+  /**
+   * Mint a short-lived (60 s) JWT for a test WebSocket session against
+   * a deployed business + agent. Used by MCP / dashboard clients to
+   * exercise the same Brain → Master → Specialist chain that real
+   * WhatsApp / voice traffic uses, without sending a real Twilio
+   * message.
+   *
+   * Pair with `mode: "chat"` for text-based testing.
+   */
+  async createTestCallToken(
+    input: CreateTestCallTokenInput,
+    signal?: AbortSignal,
+  ): Promise<TestCallToken> {
+    return this.request<TestCallToken>(
+      "POST",
+      "/test-call/token",
+      input,
       signal,
     );
   }
