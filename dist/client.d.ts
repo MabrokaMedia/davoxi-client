@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, CreateAgentInput, CreateBusinessInput, CreateTestCallTokenInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, TestCallToken, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, GetCallLogFilters, CreateAgentInput, CreateBusinessInput, CreateTestCallTokenInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, TestCallToken, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -74,7 +74,7 @@ export declare class DavoxiClient {
         calls: CallLog[];
         next_cursor?: string;
     }>;
-    getCallLog(businessId: string, callId: string, signal?: AbortSignal): Promise<CallLog>;
+    getCallLog(businessId: string, callId: string, filters?: GetCallLogFilters, signal?: AbortSignal): Promise<CallLog>;
     listWebhooks(businessId: string, signal?: AbortSignal): Promise<Webhook[]>;
     createWebhook(businessId: string, data: CreateWebhookInput, signal?: AbortSignal): Promise<Webhook>;
     updateWebhook(businessId: string, webhookId: string, data: UpdateWebhookInput, signal?: AbortSignal): Promise<Webhook>;

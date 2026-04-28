@@ -317,6 +317,13 @@ export interface CallLogFilters {
     /** Pagination cursor from previous response. */
     cursor?: string;
 }
+export interface GetCallLogFilters {
+    /**
+     * Date the call started, in YYYY-MM-DD (UTC). Required by the upstream
+     * Davoxi API to locate the call log under the per-day S3 partition.
+     */
+    date?: string;
+}
 export interface Webhook {
     webhook_id: string;
     business_id: string;

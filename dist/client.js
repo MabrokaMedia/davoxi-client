@@ -274,8 +274,12 @@ class DavoxiClient {
         const qs = params.toString();
         return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/calls${qs ? `?${qs}` : ""}`, undefined, signal);
     }
-    async getCallLog(businessId, callId, signal) {
-        return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}`, undefined, signal);
+    async getCallLog(businessId, callId, filters, signal) {
+        const params = new URLSearchParams();
+        if (filters?.date)
+            params.set("date", filters.date);
+        const qs = params.toString();
+        return this.request("GET", `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}${qs ? `?${qs}` : ""}`, undefined, signal);
     }
     // ------------------------------------------------------------------ //
     //  Webhooks                                                            //

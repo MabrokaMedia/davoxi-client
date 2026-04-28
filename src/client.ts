@@ -16,6 +16,7 @@ import type {
   Business,
   CallLog,
   CallLogFilters,
+  GetCallLogFilters,
   CreateAgentInput,
   CreateBusinessInput,
   CreateTestCallTokenInput,
@@ -524,11 +525,15 @@ export class DavoxiClient {
   async getCallLog(
     businessId: string,
     callId: string,
+    filters?: GetCallLogFilters,
     signal?: AbortSignal,
   ): Promise<CallLog> {
+    const params = new URLSearchParams();
+    if (filters?.date) params.set("date", filters.date);
+    const qs = params.toString();
     return this.request<CallLog>(
       "GET",
-      `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}`,
+      `/businesses/${DavoxiClient.enc(businessId)}/calls/${DavoxiClient.enc(callId)}${qs ? `?${qs}` : ""}`,
       undefined,
       signal,
     );
