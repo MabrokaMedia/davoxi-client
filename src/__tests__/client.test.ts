@@ -104,6 +104,42 @@ describe("HTTP methods", () => {
     await client.deleteBusiness("b1");
     expect(fetchFn.mock.calls[0][1].method).toBe("DELETE");
   });
+
+  it("getOrg targets /orgs/{id}", async () => {
+    const fetchFn = mockFetch(200, {
+      org_id: "org_abc",
+      name: "Parlo",
+      owner_id: "usr_x",
+      plan_id: null,
+      business_ids: [],
+      twilio_link_kind: null,
+    });
+    const client = makeClient();
+    const org = await client.getOrg("org_abc");
+    expect(fetchFn.mock.calls[0][0]).toMatch(/\/orgs\/org_abc$/);
+    expect(fetchFn.mock.calls[0][1].method).toBe("GET");
+    expect(org.name).toBe("Parlo");
+  });
+
+  it("updateOrg sends PUT with the partial body", async () => {
+    const fetchFn = mockFetch(200, {
+      org_id: "org_abc",
+      name: "Parlo",
+      plan_id: null,
+    });
+    const client = makeClient();
+    await client.updateOrg("org_abc", { name: "Parlo" });
+    const init = fetchFn.mock.calls[0][1] as RequestInit;
+    expect(init.method).toBe("PUT");
+    expect(JSON.parse(init.body as string)).toEqual({ name: "Parlo" });
+  });
+
+  it("updateOrg URL-encodes the org_id", async () => {
+    const fetchFn = mockFetch(200, { org_id: "org/with/slash", name: "X", plan_id: null });
+    const client = makeClient();
+    await client.updateOrg("org/with/slash", { name: "X" });
+    expect(fetchFn.mock.calls[0][0]).toContain("/orgs/org%2Fwith%2Fslash");
+  });
 });
 
 // ── Error handling ───────────────────────────────────────────────────────

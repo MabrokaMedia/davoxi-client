@@ -24,8 +24,10 @@ import type {
   DavoxiClientOptions,
   Invoice,
   LedgerResponse,
+  Org,
   PhoneNumber,
   Subscription,
+  UpdateOrgInput,
   TestCallToken,
   ToolCredential,
   UpdateAgentInput,
@@ -183,6 +185,37 @@ export class DavoxiClient {
 
   async getProfile(signal?: AbortSignal): Promise<UserProfile> {
     return this.request<UserProfile>("GET", "/users/me", undefined, signal);
+  }
+
+  // ------------------------------------------------------------------ //
+  //  Orgs                                                                 //
+  // ------------------------------------------------------------------ //
+
+  /** Read non-sensitive Org metadata (name, owner, plan, business_ids). */
+  async getOrg(orgId: string, signal?: AbortSignal): Promise<Org> {
+    return this.request<Org>(
+      "GET",
+      `/orgs/${DavoxiClient.enc(orgId)}`,
+      undefined,
+      signal,
+    );
+  }
+
+  /**
+   * Partial-update Org metadata. Only the fields you include are changed.
+   * Pass `plan_id: null` to clear the plan.
+   */
+  async updateOrg(
+    orgId: string,
+    input: UpdateOrgInput,
+    signal?: AbortSignal,
+  ): Promise<Pick<Org, "org_id" | "name" | "plan_id">> {
+    return this.request<Pick<Org, "org_id" | "name" | "plan_id">>(
+      "PUT",
+      `/orgs/${DavoxiClient.enc(orgId)}`,
+      input,
+      signal,
+    );
   }
 
   // ------------------------------------------------------------------ //
