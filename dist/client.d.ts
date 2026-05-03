@@ -4,7 +4,7 @@
  * Uses native `fetch`, zero runtime dependencies.
  * All methods return parsed JSON or throw `DavoxiApiError`.
  */
-import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, GetCallLogFilters, CreateAgentInput, CreateBusinessInput, CreateTestCallTokenInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, PhoneNumber, Subscription, TestCallToken, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
+import type { AgentDefinition, ApiKey, ApiKeyCreated, AuthTokens, ToolRef, BillingEventsResponse, BillingEventsSummary, Business, CallLog, CallLogFilters, GetCallLogFilters, CreateAgentInput, CreateBusinessInput, CreateTestCallTokenInput, CreateWebhookInput, DavoxiClientOptions, Invoice, LedgerResponse, Org, PhoneNumber, Subscription, UpdateOrgInput, TestCallToken, ToolCredential, UpdateAgentInput, UpdateBusinessInput, UpdateWebhookInput, UsageDetail, UsageRecord, UsageSummary, UserProfile, Webhook } from "./types";
 export declare class DavoxiApiError extends Error {
     readonly statusCode: number;
     readonly statusText: string;
@@ -22,6 +22,13 @@ export declare class DavoxiClient {
     login(email: string, password: string, signal?: AbortSignal): Promise<AuthTokens>;
     refresh(refreshToken: string, signal?: AbortSignal): Promise<AuthTokens>;
     getProfile(signal?: AbortSignal): Promise<UserProfile>;
+    /** Read non-sensitive Org metadata (name, owner, plan, business_ids). */
+    getOrg(orgId: string, signal?: AbortSignal): Promise<Org>;
+    /**
+     * Partial-update Org metadata. Only the fields you include are changed.
+     * Pass `plan_id: null` to clear the plan.
+     */
+    updateOrg(orgId: string, input: UpdateOrgInput, signal?: AbortSignal): Promise<Pick<Org, "org_id" | "name" | "plan_id">>;
     listBusinesses(signal?: AbortSignal): Promise<Business[]>;
     getBusiness(id: string, signal?: AbortSignal): Promise<Business>;
     createBusiness(data: CreateBusinessInput, signal?: AbortSignal): Promise<Business>;

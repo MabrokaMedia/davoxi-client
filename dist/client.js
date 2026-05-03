@@ -113,6 +113,20 @@ class DavoxiClient {
         return this.request("GET", "/users/me", undefined, signal);
     }
     // ------------------------------------------------------------------ //
+    //  Orgs                                                                 //
+    // ------------------------------------------------------------------ //
+    /** Read non-sensitive Org metadata (name, owner, plan, business_ids). */
+    async getOrg(orgId, signal) {
+        return this.request("GET", `/orgs/${DavoxiClient.enc(orgId)}`, undefined, signal);
+    }
+    /**
+     * Partial-update Org metadata. Only the fields you include are changed.
+     * Pass `plan_id: null` to clear the plan.
+     */
+    async updateOrg(orgId, input, signal) {
+        return this.request("PUT", `/orgs/${DavoxiClient.enc(orgId)}`, input, signal);
+    }
+    // ------------------------------------------------------------------ //
     //  Businesses                                                          //
     // ------------------------------------------------------------------ //
     async listBusinesses(signal) {

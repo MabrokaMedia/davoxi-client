@@ -371,6 +371,35 @@ export interface PhoneNumber {
     capabilities: string[];
     status: string;
 }
+/**
+ * Non-sensitive Org metadata returned by `GET /api/orgs/{id}`.
+ *
+ * Sensitive fields (`twilio_link` credentials, etc.) are NOT included; they
+ * have their own dedicated endpoints. `twilio_link_kind` is a presence-only
+ * signal — typically `"subaccount"` / `"connect"` / null when no link is
+ * configured.
+ */
+export interface Org {
+    org_id: string;
+    name: string;
+    owner_id: string | null;
+    plan_id: string | null;
+    business_ids: string[];
+    twilio_link_kind: string | null;
+}
+/**
+ * Partial-update payload for `PUT /api/orgs/{id}`.
+ *
+ * Only the fields you want to change need to be present. Pass `plan_id: null`
+ * to clear the plan.
+ *
+ * `business_ids`, `twilio_link`, and `owner_id` are read-only on this
+ * endpoint — they're maintained by their respective sub-resources.
+ */
+export interface UpdateOrgInput {
+    name?: string;
+    plan_id?: string | null;
+}
 export interface DavoxiClientOptions {
     apiUrl?: string;
     apiKey: string;

@@ -79,6 +79,39 @@ function makeClient(opts) {
         await client.deleteBusiness("b1");
         (0, vitest_1.expect)(fetchFn.mock.calls[0][1].method).toBe("DELETE");
     });
+    (0, vitest_1.it)("getOrg targets /orgs/{id}", async () => {
+        const fetchFn = mockFetch(200, {
+            org_id: "org_abc",
+            name: "Parlo",
+            owner_id: "usr_x",
+            plan_id: null,
+            business_ids: [],
+            twilio_link_kind: null,
+        });
+        const client = makeClient();
+        const org = await client.getOrg("org_abc");
+        (0, vitest_1.expect)(fetchFn.mock.calls[0][0]).toMatch(/\/orgs\/org_abc$/);
+        (0, vitest_1.expect)(fetchFn.mock.calls[0][1].method).toBe("GET");
+        (0, vitest_1.expect)(org.name).toBe("Parlo");
+    });
+    (0, vitest_1.it)("updateOrg sends PUT with the partial body", async () => {
+        const fetchFn = mockFetch(200, {
+            org_id: "org_abc",
+            name: "Parlo",
+            plan_id: null,
+        });
+        const client = makeClient();
+        await client.updateOrg("org_abc", { name: "Parlo" });
+        const init = fetchFn.mock.calls[0][1];
+        (0, vitest_1.expect)(init.method).toBe("PUT");
+        (0, vitest_1.expect)(JSON.parse(init.body)).toEqual({ name: "Parlo" });
+    });
+    (0, vitest_1.it)("updateOrg URL-encodes the org_id", async () => {
+        const fetchFn = mockFetch(200, { org_id: "org/with/slash", name: "X", plan_id: null });
+        const client = makeClient();
+        await client.updateOrg("org/with/slash", { name: "X" });
+        (0, vitest_1.expect)(fetchFn.mock.calls[0][0]).toContain("/orgs/org%2Fwith%2Fslash");
+    });
 });
 // ── Error handling ───────────────────────────────────────────────────────
 (0, vitest_1.describe)("Error handling", () => {
