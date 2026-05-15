@@ -20,6 +20,34 @@ export interface MasterConfig {
   max_specialists_per_turn: number;
 }
 
+/**
+ * Per-business LLM model + escalation-ladder override (doc-34 coupling #6).
+ *
+ * Every field is optional. Unset fields fall through to the platform
+ * default in the backend's `shared::llm_defaults` module — so a row
+ * with NO `llm_config` behaves identically to today's hardcoded
+ * defaults. Operators flip an existing business to a custom model
+ * via `update_business` without a code deploy.
+ *
+ * For each role (`master`, `specialist`, `brain`, `chat`):
+ * - `*_model` pins the head model used by the agent's `LlmBinding`
+ *   (the model attempted first by the EscalationLayer).
+ * - `*_ladder` is the full escalation order. Set to a one-element
+ *   array to PIN the business to that single model with NO fallback
+ *   (the canonical "cost-optimize on Haiku-only" use case). Set to
+ *   `[]` to skip escalation entirely and run the head model once.
+ */
+export interface LlmConfig {
+  master_model?: string;
+  master_ladder?: string[];
+  specialist_model?: string;
+  specialist_ladder?: string[];
+  brain_model?: string;
+  brain_ladder?: string[];
+  chat_model?: string;
+  chat_ladder?: string[];
+}
+
 // ── Business ──
 
 /**
@@ -53,6 +81,8 @@ export interface Business {
   extension?: string;
   owner_email?: string;
   network_config?: NetworkConfig;
+  /** Per-business LLM model + ladder override. Absent when the business uses platform defaults. */
+  llm_config?: LlmConfig;
 }
 
 export interface CreateBusinessInput {
@@ -69,6 +99,15 @@ export interface UpdateBusinessInput {
   voice_config?: Partial<VoiceConfig>;
   master_config?: Partial<MasterConfig>;
   network_config?: NetworkConfig;
+  /**
+   * Per-business LLM model + ladder override (doc-34 coupling #6).
+   *
+   * Partial-merge on the backend: fields present here REPLACE the
+   * matching field on the row, fields absent are PRESERVED. To clear
+   * a single field, send it as `null`. To drop the whole config and
+   * fall back to platform defaults, send `llm_config: null`.
+   */
+  llm_config?: LlmConfig | null;
 }
 
 // ── Agents ──
