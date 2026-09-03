@@ -181,6 +181,13 @@ export interface AgentPermissions {
 export interface AgentDefinition {
   business_id: string;
   agent_id: string;
+  /**
+   * Human name chosen by the business — "Ride booking", "Airtime top-up".
+   * Distinct from `description`, which is prose the master routes on and
+   * indexing embeds. Absent on every agent written before the field
+   * existed, so consumers fall back to the capability or the description.
+   */
+  name?: string;
   description: string;
   system_prompt: string;
   /**
@@ -210,6 +217,8 @@ export interface AgentDefinition {
 }
 
 export interface CreateAgentInput {
+  /** Human name for the agent (max 80 chars). */
+  name?: string;
   description: string;
   system_prompt: string;
   tools?: ToolDefinition[];
@@ -220,6 +229,9 @@ export interface CreateAgentInput {
 }
 
 export interface UpdateAgentInput {
+  /** Rename the agent. Does not re-embed it — the description is what
+   *  indexing matches against, not this. */
+  name?: string;
   description?: string;
   system_prompt?: string;
   tools?: ToolDefinition[];
